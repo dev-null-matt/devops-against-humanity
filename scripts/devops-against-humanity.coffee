@@ -1410,20 +1410,10 @@ module.exports = (robot) ->
   robot.respond /devops new game/i, (message) ->
     dahGameStorage.clearRoomData(message)
     dahGameStorage.isSenderDealer(message, true)
+    message.send "Starting a new devops game"
 
   robot.respond /devops I'm joining/i, (message) ->
-    if (dahGameStorage.isSenderDealer(message))
-      response = "You're the currently the devops dealer.  Maybe ask for a black card?"
-    else if (!dahGameStorage.getCards(message).length)
-      give_user_cards(message)
-      jid = message.message.user.jid
-      response = get_cards(message)
-    else
-      response = "You're already playing.  Do you want to know what devops cards you have?"
-    if jid?
-      robot.message jid cards
-    else
-      message.send response
+    add_sender_to_game(message)
 
   robot.respond /devops (what are )?my cards/i, (message) ->
     jid = message.message.user.jid
@@ -1440,28 +1430,37 @@ module.exports = (robot) ->
     else
       message.send "There is no devops dealer currently.  Maybe you should start a game?"
 
-random_completion = ->
-  black_card = draw_black_card().split(' ')
-  shouldCapitalize = true
-
-  for word in black_card
-    if word.match(/_{10}/)
-      black_card[_i] = black_card[_i].replace('__________', draw_white_card(shouldCapitalize))
-    shouldCapitalize = ".?".indexOf(black_card[_i].slice(-1)) > -1
-  black_card.join " "
+# Called directly by robot.respond()s
+add_sender_to_game = (message) ->
+  if (dahGameStorage.isSenderDealer(message))
+    response = "You're the currently the devops dealer.  Maybe ask for a black card?"
+  else if (!dahGameStorage.getCards(message).length)
+    give_user_cards(message)
+    jid = message.message.user.jid
+    response = get_cards(message)
+  else
+    response = "You're already playing.  Do you want to know what devops cards you have?"
+  if jid?
+    robot.message jid cards
+  else
+    message.send response
 
 draw_black_card = ->
   black_cards[random_index(black_cards)]
 
-draw_white_card = (shouldCapitalize) ->
+draw_white_card = ->
+  white_cards[random_index(white_cards)]
 
-  white_card = white_cards[random_index(white_cards)]
-  if shouldCapitalize && ! white_card.charAt(0) is '"'
-    white_card = white_card.charAt(0) + white_card.charAt(1).toUpperCase() + white_card.slice(2)
-  else if shouldCapitalize
-    white_card = white_card.charAt(0).toUpperCase() + white_card.slice(1)
-  white_card
+random_completion = ->
+  black_card = draw_black_card()
+  random_white_cards = []
+  blanks = count_black_card_blanks(black_card)
+  for num in [1..blanks]
+    white_card = draw_white_card()
+    random_white_cards.push white_card
+  get_combined_text(black_card, random_white_cards)
 
+# Game logic helpers
 get_cards = (message) ->
   cards = []
   for card in dahGameStorage.getCards(message)
@@ -1476,6 +1475,30 @@ give_user_cards = (message) ->
   for num in [1..5]
     cards.push draw_white_card()
   dahGameStorage.setCards(message, cards)
+
+# Card completion helpers
+get_combined_text = (black_card, random_white_cards) ->
+  black_card_tokens = black_card.split(' ')
+  shouldCapitalize = true
+  currentWhiteCard = random_white_cards.shift()
+  for word in black_card_tokens
+    if word.match(/_{10}/)
+      if shouldCapitalize
+        currentWhiteCard = capitalize_first_letter(currentWhiteCard)
+      black_card_tokens[_i] = black_card_tokens[_i].replace('__________', currentWhiteCard)
+      currentWhiteCard = random_white_cards.shift()
+    shouldCapitalize = ".?".indexOf(black_card[_i].slice(-1)) > -1
+  black_card_tokens.join " "
+
+capitalize_first_letter = (text) ->
+  if text.charAt(0) is '"'
+    white_card = text.charAt(0) + text.charAt(1).toUpperCase() + text.slice(2)
+  else
+    white_card = text.charAt(0).toUpperCase() + text.slice(1)
+  white_card
+
+count_black_card_blanks = (black_card) ->
+  (black_card.match(/__________/g) || []).length
 
 random_index = (array) ->
   Math.floor(Math.random() * array.length)
