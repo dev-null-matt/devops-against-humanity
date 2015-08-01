@@ -1335,8 +1335,15 @@ white_cards = [
 ]
 
 module.exports = (robot) ->
+
   robot.respond /devops card( me)?/i, (message) ->
     message.send draw_cards()
+
+  robot.respond /devops black card/i, (message) ->
+    message.send draw_black_card()
+
+  robot.respond /devops white card/i, (message) ->
+    message.send draw_white_card(true)
 
 draw_cards = ->
   black_card = draw_black_card().split(' ')
