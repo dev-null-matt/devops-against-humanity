@@ -1347,23 +1347,23 @@ module.exports = (robot) ->
 
 draw_cards = ->
   black_card = draw_black_card().split(' ')
-  firstWord = true
+  shouldCapitalize = true
 
   for word in black_card
     if word.match(/_{10}/)
-      black_card[_i] = black_card[_i].replace('__________', draw_white_card(firstWord))
-    firstWord = false
+      black_card[_i] = black_card[_i].replace('__________', draw_white_card(shouldCapitalize))
+    shouldCapitalize = ".?".indexOf(black_card[_i].slice(-1)) > -1
   black_card.join " "
 
 draw_black_card = ->
   black_cards[random_index(black_cards)]
 
-draw_white_card = (firstWord) ->
+draw_white_card = (shouldCapitalize) ->
 
   white_card = white_cards[random_index(white_cards)]
-  if firstWord && ! white_card.charAt(0) is '"'
+  if shouldCapitalize && ! white_card.charAt(0) is '"'
     white_card = white_card.charAt(0) + white_card.charAt(1).toUpperCase() + white_card.slice(2)
-  else if firstWord
+  else if shouldCapitalize
     white_card = white_card.charAt(0).toUpperCase() + white_card.slice(1)
   white_card
 
