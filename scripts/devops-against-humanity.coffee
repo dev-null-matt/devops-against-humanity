@@ -1334,6 +1334,8 @@ white_cards = [
   "updating build.gradle"
 ]
 
+Util = require "util"
+
 class DahGameStorage
 
   constructor: () ->
@@ -1347,20 +1349,24 @@ class DahGameStorage
       @data[room] = result
     result
 
-  userData: (message) ->
-    name = message.message.user.mention_name | message.message.user.name
-    userData = @roomData(message)[name]
+  clearRoomData: (message) ->
+    room = message.message.room
+    @data[room] = {}
 
+  userData: (message) ->
+    name = @getSenderName(message)
+    userData = @roomData(message)[name]
     if (!userData)
-      userData = {'cards': [], 'score': 0, 'isDealer': false, 'jid': message.message.user.jid}
+      userData = {'name': name, 'cards': [], 'score': 0, 'isDealer': false, 'jid': message.message.user.jid}
       @roomData(message)[name] = userData
     userData
 
   getDealer: (message) ->
-    for player in @roomData(message)
+    dealer = undefined
+    for name, player of @roomData(message)
       if player['isDealer']
-        player
-    undefined
+        dealer = player
+    dealer
 
   getCards: (message) ->
     @userData(message)['cards']
@@ -1374,8 +1380,17 @@ class DahGameStorage
   scorePoint: (message) ->
     @userData(message)['score']
 
-  isDealer: (message) ->
-    @userData(message)['isDealer']
+  isSenderDealer: (message, isDealer) ->
+    if isDealer?
+      @userData(message)['isDealer'] = isDealer
+    else
+      @userData(message)['isDealer']
+
+  getSenderName: (message) ->
+    name = message.message.user.mention_name
+    if (!name)
+      name = message.message.user.name
+    name
 
 dahGameStorage = undefined
 
@@ -1384,7 +1399,7 @@ module.exports = (robot) ->
   dahGameStorage = new DahGameStorage()
 
   robot.respond /devops card( me)?/i, (message) ->
-    message.send draw_cards()
+    message.send random_completion()
 
   robot.respond /devops black card/i, (message) ->
     message.send draw_black_card()
@@ -1392,7 +1407,25 @@ module.exports = (robot) ->
   robot.respond /devops white card/i, (message) ->
     message.send draw_white_card(true)
 
-  robot.respond /(what are )?my devops cards/i, (message) ->
+  robot.respond /devops new game/i, (message) ->
+    dahGameStorage.clearRoomData(message)
+    dahGameStorage.isSenderDealer(message, true)
+
+  robot.respond /devops I'm joining/i, (message) ->
+    if (dahGameStorage.isSenderDealer(message))
+      response = "You're the currently the devops dealer.  Maybe ask for a black card?"
+    else if (!dahGameStorage.getCards(message).length)
+      give_user_cards(message)
+      jid = message.message.user.jid
+      response = get_cards(message)
+    else
+      response = "You're already playing.  Do you want to know what devops cards you have?"
+    if jid?
+      robot.message jid cards
+    else
+      message.send response
+
+  robot.respond /devops (what are )?my cards/i, (message) ->
     jid = message.message.user.jid
     cards = get_cards(message)
     if jid?
@@ -1400,19 +1433,14 @@ module.exports = (robot) ->
     else
       message.send cards
 
-  robot.respond /I'm joining devops/i, (message) ->
-    if (!dahGameStorage.getCards(message).length)
-      give_user_cards(message)
-      jid = message.message.user.jid
-      response = get_cards(message)
+  robot.respond /devops( who is the)? dealer/i, (message) ->
+    dealer = dahGameStorage.getDealer(message)
+    if dealer?
+      message.send "@#{dealer.name} is currently the devops dealer."
     else
-      response = "You're already playing.  Do you want to know what cards you have?"
-    if jid?
-      robot.message jid cards
-    else
-      message.send response
+      message.send "There is no devops dealer currently.  Maybe you should start a game?"
 
-draw_cards = ->
+random_completion = ->
   black_card = draw_black_card().split(' ')
   shouldCapitalize = true
 
@@ -1441,7 +1469,7 @@ get_cards = (message) ->
   if cards.length > 0
     cards.join("\n")
   else
-    "You have no cards.  Maybe you should join the game?"
+    "You have no devops cards.  Maybe you should join the game?"
 
 give_user_cards = (message) ->
   cards = []
