@@ -1334,7 +1334,54 @@ white_cards = [
   "updating build.gradle"
 ]
 
+class DahGameStorage
+
+  constructor: () ->
+    @data = {}
+
+  roomData: (message) ->
+    room = message.message.room
+    result = @data[room]
+    if (!result)
+      result = {}
+      @data[room] = result
+    result
+
+  userData: (message) ->
+    name = message.message.user.mention_name | message.message.user.name
+    userData = @roomData(message)[name]
+
+    if (!userData)
+      userData = {'cards': [], 'score': 0, 'isDealer': false, 'jid': message.message.user.jid}
+      @roomData(message)[name] = userData
+    userData
+
+  getDealer: (message) ->
+    for player in @roomData(message)
+      if player['isDealer']
+        player
+    undefined
+
+  getCards: (message) ->
+    @userData(message)['cards']
+
+  setCards: (message, cards) ->
+    @userData(message)['cards'] = cards
+
+  getScore: (message) ->
+    @userData(message)['score']
+
+  scorePoint: (message) ->
+    @userData(message)['score']
+
+  isDealer: (message) ->
+    @userData(message)['isDealer']
+
+dahGameStorage = undefined
+
 module.exports = (robot) ->
+
+  dahGameStorage = new DahGameStorage()
 
   robot.respond /devops card( me)?/i, (message) ->
     message.send draw_cards()
@@ -1344,6 +1391,26 @@ module.exports = (robot) ->
 
   robot.respond /devops white card/i, (message) ->
     message.send draw_white_card(true)
+
+  robot.respond /(what are )?my devops cards/i, (message) ->
+    jid = message.message.user.jid
+    cards = get_cards(message)
+    if jid?
+      robot.message jid cards
+    else
+      message.send cards
+
+  robot.respond /I'm joining devops/i, (message) ->
+    if (!dahGameStorage.getCards(message).length)
+      give_user_cards(message)
+      jid = message.message.user.jid
+      response = get_cards(message)
+    else
+      response = "You're already playing.  Do you want to know what cards you have?"
+    if jid?
+      robot.message jid cards
+    else
+      message.send response
 
 draw_cards = ->
   black_card = draw_black_card().split(' ')
@@ -1366,6 +1433,21 @@ draw_white_card = (shouldCapitalize) ->
   else if shouldCapitalize
     white_card = white_card.charAt(0).toUpperCase() + white_card.slice(1)
   white_card
+
+get_cards = (message) ->
+  cards = []
+  for card in dahGameStorage.getCards(message)
+    cards.push "#{_i+1}) #{card}"
+  if cards.length > 0
+    cards.join("\n")
+  else
+    "You have no cards.  Maybe you should join the game?"
+
+give_user_cards = (message) ->
+  cards = []
+  for num in [1..5]
+    cards.push draw_white_card()
+  dahGameStorage.setCards(message, cards)
 
 random_index = (array) ->
   Math.floor(Math.random() * array.length)
