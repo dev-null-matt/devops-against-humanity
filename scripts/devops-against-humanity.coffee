@@ -1341,56 +1341,60 @@ class DahGameStorage
   constructor: () ->
     @data = {}
 
-  roomData: (message) ->
-    room = message.message.room
-    result = @data[room]
-    if (!result)
-      result = {}
-      @data[room] = result
-    result
-
-  clearRoomData: (message) ->
-    room = message.message.room
-    @data[room] = {}
-
-  userData: (message) ->
-    name = @getSenderName(message)
-    userData = @roomData(message)[name]
-    if (!userData)
-      userData = {'name': name, 'cards': [], 'score': 0, 'isDealer': false, 'jid': message.message.user.jid}
-      @roomData(message)[name] = userData
-    userData
-
-  getDealer: (message) ->
+  # Dealer functions ###########################################################
+  getDealer: (room) ->
     dealer = undefined
-    for name, player of @roomData(message)
+    for name, player of @roomData(room)['users']
       if player['isDealer']
         dealer = player
     dealer
 
-  getCards: (message) ->
-    @userData(message)['cards']
-
-  setCards: (message, cards) ->
-    @userData(message)['cards'] = cards
-
-  getScore: (message) ->
-    @userData(message)['score']
-
-  scorePoint: (message) ->
-    @userData(message)['score']
-
-  isSenderDealer: (message, isDealer) ->
+  isSenderDealer: (name, room, isDealer) ->
     if isDealer?
-      @userData(message)['isDealer'] = isDealer
+      @userData(name, room)['isDealer'] = isDealer
     else
-      @userData(message)['isDealer']
+      @userData(name, room)['isDealer']
 
-  getSenderName: (message) ->
-    name = message.message.user.mention_name
-    if (!name)
-      name = message.message.user.name
-    name
+  # Black card functions #######################################################
+  getBlackCard: (room) ->
+    @roomData(room)['blackCard']
+
+  setBlackCard: (room, blackCard) ->
+    @roomData(room)['blackCard'] = blackCard
+
+  # Player card functions ######################################################
+  getCards: (name, room) ->
+    @userData(name, room)['cards']
+
+  setCards: (name, room, cards) ->
+    @userData(name, room)['cards'] = cards
+
+  # Player score functions #####################################################
+  getScore: (name, room) ->
+    @userData(name, room)['score']
+
+  scorePoint: (name, room) ->
+    @userData(name, room)['score']++
+
+  # Misc functions #############################################################
+  clearRoomData: (room) ->
+    room = room
+    @data[room] = {}
+
+  # Helper functions ###########################################################
+  roomData: (room) ->
+    result = @data[room]
+    if (!result || !(result['users'] || result['blackCard']))
+      result = {'users': {}}
+      @data[room] = result
+    result
+
+  userData: (name, room) ->
+    userData = @roomData(room)['users'][name]
+    if (!userData)
+      userData = {'name': name, 'cards': [], 'score': 0, 'isDealer': false}
+      @roomData(room)['users'][name] = userData
+    userData
 
 dahGameStorage = undefined
 
@@ -1399,45 +1403,66 @@ module.exports = (robot) ->
   dahGameStorage = new DahGameStorage()
 
   robot.respond /devops card( me)?/i, (message) ->
-    message.send random_completion()
+    message.send randomCompletion()
 
-  robot.respond /devops black card/i, (message) ->
-    message.send draw_black_card()
+  robot.respond /devops (draw )?black card/i, (message) ->
+    blackCard = drawBlackCard()
+    room = getRoomName(message)
+    if dahGameStorage.isSenderDealer(getSenderName(message),room) && !dahGameStorage.getBlackCard(room)
+      dahGameStorage.setBlackCard(room, blackCard)
+      message.send "Setting black card to:\n#{blackCard}"
+    else
+      message.send blackCard
+
+  robot.respond /devops (what is (the )?)?current black card/i, (message) ->
+    blackCard = dahGameStorage.getBlackCard(getRoomName(message))
+    if (blackCard)
+      message.send blackCard
+    else
+      dealer = dahGameStorage.getDealer(getSenderName(message), getRoomName(message))
+      if (dealer)
+        message.send "There is no current black card.  Maybe @#{dealer.name} should draw one?"
+      else
+        message.send "There isn't a black card currently.  Maybe you should start a game?"
 
   robot.respond /devops white card/i, (message) ->
-    message.send draw_white_card(true)
+    message.send drawWhiteCard(true)
 
-  robot.respond /devops new game/i, (message) ->
-    dahGameStorage.clearRoomData(message)
-    dahGameStorage.isSenderDealer(message, true)
-    message.send "Starting a new devops game"
+  robot.respond /devops (start )?new game/i, (message) ->
+    sender = getSenderName(message)
+    room = getRoomName(message)
+    dahGameStorage.clearRoomData(room)
+    dahGameStorage.isSenderDealer(sender, room, true)
+    message.send "Starting a new devops game."
 
-  robot.respond /devops I'm joining/i, (message) ->
-    add_sender_to_game(message)
+  robot.respond /devops (I'm )?join(ing)?/i, (message) ->
+    addSenderToGame(message)
 
   robot.respond /devops (what are )?my cards/i, (message) ->
     jid = message.message.user.jid
-    cards = get_cards(message)
+    cards = getCards(getSenderName(message), getRoomName(message))
     if jid?
       robot.message jid cards
     else
       message.send cards
 
-  robot.respond /devops( who is the)? dealer/i, (message) ->
-    dealer = dahGameStorage.getDealer(message)
+  robot.respond /devops (who is the )?dealer/i, (message) ->
+    dealer = dahGameStorage.getDealer(getSenderName(message), getRoomName(message))
     if dealer?
       message.send "@#{dealer.name} is currently the devops dealer."
     else
       message.send "There is no devops dealer currently.  Maybe you should start a game?"
 
-# Called directly by robot.respond()s
-add_sender_to_game = (message) ->
-  if (dahGameStorage.isSenderDealer(message))
+# Called directly by robot.respond()s ##########################################
+addSenderToGame = (message) ->
+  sender = getSenderName(message)
+  room = getRoomName(message)
+  if (dahGameStorage.isSenderDealer(sender, room))
     response = "You're the currently the devops dealer.  Maybe ask for a black card?"
-  else if (!dahGameStorage.getCards(message).length)
-    give_user_cards(message)
+  else if (!dahGameStorage.getCards(sender, room).length)
+    giveUserCards(sender, room)
     jid = message.message.user.jid
-    response = get_cards(message)
+    response = getCards(sender, room)
   else
     response = "You're already playing.  Do you want to know what devops cards you have?"
   if jid?
@@ -1445,60 +1470,70 @@ add_sender_to_game = (message) ->
   else
     message.send response
 
-draw_black_card = ->
-  black_cards[random_index(black_cards)]
+drawBlackCard = ->
+  black_cards[randomIndex(black_cards)]
 
-draw_white_card = ->
-  white_cards[random_index(white_cards)]
+drawWhiteCard = ->
+  white_cards[randomIndex(white_cards)]
 
-random_completion = ->
-  black_card = draw_black_card()
+randomCompletion = ->
+  black_card = drawBlackCard()
   random_white_cards = []
-  blanks = count_black_card_blanks(black_card)
+  blanks = countBlackCardBlanks(black_card)
   for num in [1..blanks]
-    white_card = draw_white_card()
+    white_card = drawWhiteCard()
     random_white_cards.push white_card
-  get_combined_text(black_card, random_white_cards)
+  getCombinedText(black_card, random_white_cards)
 
-# Game logic helpers
-get_cards = (message) ->
+# Game logic helpers ###########################################################
+getCards = (sender, room) ->
   cards = []
-  for card in dahGameStorage.getCards(message)
+  for card in dahGameStorage.getCards(sender, room)
     cards.push "#{_i+1}) #{card}"
   if cards.length > 0
     cards.join("\n")
   else
     "You have no devops cards.  Maybe you should join the game?"
 
-give_user_cards = (message) ->
+getRoomName = (message) ->
+  message.message.room
+
+getSenderName = (message) ->
+  name = message.message.user.mention_name
+  if (!name)
+    name = message.message.user.name
+  name
+
+giveUserCards = (sender, room) ->
   cards = []
   for num in [1..5]
-    cards.push draw_white_card()
-  dahGameStorage.setCards(message, cards)
+    cards.push drawWhiteCard()
+  dahGameStorage.setCards(sender, room, cards)
 
-# Card completion helpers
-get_combined_text = (black_card, random_white_cards) ->
+# Card completion helpers ######################################################
+getCombinedText = (black_card, random_white_cards) ->
   black_card_tokens = black_card.split(' ')
   shouldCapitalize = true
   currentWhiteCard = random_white_cards.shift()
   for word in black_card_tokens
     if word.match(/_{10}/)
       if shouldCapitalize
-        currentWhiteCard = capitalize_first_letter(currentWhiteCard)
+        currentWhiteCard = capitalizeFirstLetter(currentWhiteCard)
       black_card_tokens[_i] = black_card_tokens[_i].replace('__________', currentWhiteCard)
       currentWhiteCard = random_white_cards.shift()
     shouldCapitalize = ".?".indexOf(black_card[_i].slice(-1)) > -1
   black_card_tokens.join " "
 
-capitalize_first_letter = (text) ->
+capitalizeFirstLetter = (text) ->
   if text.charAt(0) is '"'
     white_card = text.charAt(0) + text.charAt(1).toUpperCase() + text.slice(2)
   else
     white_card = text.charAt(0).toUpperCase() + text.slice(1)
   white_card
 
-count_black_card_blanks = (black_card) ->
+countBlackCardBlanks = (black_card) ->
   (black_card.match(/__________/g) || []).length
 
-random_index = (array) ->
+# Utility ######################################################################
+randomIndex = (array) ->
   Math.floor(Math.random() * array.length)
