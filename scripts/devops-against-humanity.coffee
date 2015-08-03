@@ -192,7 +192,6 @@ black_cards = [
   "I'm writing my next IRC bot with __________."
   "I cannot wait until someone makes a __________ cluster out of these."
   "C will finally be displaced by __________."
-  "____________________.io"
   "We don't need to worry about __________, we're using MongoDB."
   "Why is __________ better than Hadoop?"
   "FC067: __________"
@@ -242,7 +241,7 @@ black_cards = [
   "It is completely dark. You are likely to be eaten by a __________."
   "Conway's Game of __________."
   "Next year I'll start learning __________."
-  "s/__________/__________/g"
+  # "s/__________/__________/g" # TODO: Fix this.  Its awesome, but doesn't work.
   "__________ is the newest gTLD."
   "Works on my __________."
   "One does not simply __________."
@@ -1353,11 +1352,15 @@ class DahGameStorage
         dealer = player
     dealer
 
-  isSenderDealer: (name, room, isDealer) ->
-    if isDealer?
-      @userData(name, room)['isDealer'] = isDealer
-    else
-      @userData(name, room)['isDealer']
+  setDealer: (player, room) ->
+    for name, data of @roomData(room)['users']
+      if player == name
+        data['isDealer'] = true
+      else
+        data['isDealer'] = false
+
+  isSenderDealer: (name, room) ->
+    @userData(name, room)['isDealer']
 
   # Black card functions #######################################################
   getBlackCard: (room) ->
@@ -1391,8 +1394,11 @@ class DahGameStorage
 
   # Misc functions #############################################################
   clearRoomData: (room) ->
-    room = room
     @data[room] = {}
+
+  clearRoundData: (room) ->
+    delete @data[room]['blackCard']
+    delete @data[room]['combos']
 
   # Helper functions ###########################################################
   roomData: (room) ->
@@ -1435,8 +1441,7 @@ module.exports = (robot) ->
       players = []
       response = []
       for player, play of playedCardInfo
-        index = randomIndex(players)
-        players.splice(index, 0, player)
+        players.splice(randomIndex(players), 0, player)
       for player in players
         response.push("#{_i+1}) #{playedCardInfo[player]['completion']}")
         playedCardInfo[player]['index'] = _i+1
@@ -1460,6 +1465,37 @@ module.exports = (robot) ->
       else
         message.send "There isn't a black card currently.  Maybe you should start a game?"
 
+  robot.respond /devops ([0-9]+) won/i, (message) ->
+    sender = getSenderName(message)
+    room = getRoomName(message)
+    if dahGameStorage.getDealer(room) && dahGameStorage.isSenderDealer(sender, room) && dahGameStorage.getBlackCard(room)
+      playedCardInfo = dahGameStorage.getAllPlayedCards(room)
+      winnerIndex = message.match[1]
+      players = Object.keys(playedCardInfo)
+      if winnerIndex > 0 && winnerIndex <= players.length
+        winningPlayer = undefined
+        for player, play of playedCardInfo
+          if "#{play['index']}" is "#{winnerIndex}"
+            winningPlayer = player
+        if winningPlayer
+          dahGameStorage.scorePoint(player, room)
+          dahGameStorage.setDealer(players[randomIndex(players)], room)
+          for player in players
+            giveUserCards(player, room)
+          dahGameStorage.clearRoundData(room)
+          message.send "@#{player} won.  #{player}'s score is now #{dahGameStorage.getScore(player, room)}."
+          message.send "@#{dahGameStorage.getDealer(room)['name']} is the new dealer."
+        else
+          message.reply "I couldn't find that card combination.  Have white cards been revealed?"
+      else
+        message.reply "There were only #{Object.keys(playedCardInfo)} cards played.  Maybe pick one of those?"
+    else if !dahGameStorage.getDealer(room)
+      message.reply "There is no devops dealer currently.  Maybe you should start a game?"
+    else if !dahGameStorage.isSenderDealer(sender, room)
+      message.reply "You have to be the dealer to award points.  Stop trying to cheat."
+    else if !dahGameStorage.getBlackCard(room)
+      message.reply "You haven't drawn a black card yet.  How can you know who won?"
+
   robot.respond /devops white card/i, (message) ->
     message.send drawWhiteCard(true)
 
@@ -1467,7 +1503,7 @@ module.exports = (robot) ->
     sender = getSenderName(message)
     room = getRoomName(message)
     dahGameStorage.clearRoomData(room)
-    dahGameStorage.isSenderDealer(sender, room, true)
+    dahGameStorage.setDealer(sender, room)
     dahGameStorage.userData(sender, room)['jid'] = message.message.user.jid
     message.send "Starting a new devops game."
 
