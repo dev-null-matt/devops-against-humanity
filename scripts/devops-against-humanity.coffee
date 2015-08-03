@@ -10,6 +10,13 @@
 #
 # Commands:
 #   hubot devops card me - Returns a random card against humanity with emoji
+#   hubot devops start game - Starts a new devops agains humanity game
+#   hubot devops join - Joins an existing game
+#   hubot devops who is the dealer - Mentions the dealer
+#   hubot devops black card - Displays a black card, setting it for the round if you're the dealer
+#   hubot devops play card <n> <m> <o> - Plays cards from your hand
+#   hubot devops reveal cards - Reveals all the card combinations
+#   hubot devops <n> won - Announces the winner of the round
 #
 # Author:
 #   KevinBehrens
