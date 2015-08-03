@@ -1536,18 +1536,24 @@ playCards = (message) ->
     if (blackCard)
       blanks = countBlackCardBlanks(blackCard)
       plays = []
+      # Get all the cards played
       for index in cardIndices
         if index? && index > 0 && index < 6
           plays.push cards[index-1]
-          cards.splice(index-1,1)
         else if index?
           message.reply "you only have 5 cards in your hand.  You can't play card \##{index}."
-          cards.splice(0,0,plays)
+          plays = undefined
           break
         else
+          cardIndices.splice(index,cardIndices.length - index)
           break
+      # Play the cards
       if (plays.length && plays.length == countBlackCardBlanks(blackCard))
-        dahGameStorage.setCards(sender, room, cards)
+        newHand = []
+        for card in cards
+          if !(card in plays)
+            newHand.push card
+        dahGameStorage.setCards(sender, room, newHand)
         dahGameStorage.setCardsPlayed(sender, room, getCombinedText(blackCard, plays))
       else if (plays.length)
         verb = "is"
