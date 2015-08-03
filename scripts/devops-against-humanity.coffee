@@ -553,6 +553,7 @@ black_cards = [
   "Every day at work I implement __________ and my mother still tells her friends I \"do computers\"."
   "That's the first time I've ever seen comments written in __________."
   "It's not a problem, I'll just __________ it later."
+  "I, for one, welcome our new __________ overlords."
 ]
 
 white_cards = [
@@ -1332,6 +1333,9 @@ white_cards = [
   "CTRL - C! CTRL - C! CTRL - C!"
   "Greg Case"
   "updating build.gradle"
+  "GIT_HISTORY_ALL_FUCKED_UP_IN_HERE = TURBO"
+  "Cowboy Neal"
+  "insensitive clod"
 ]
 
 Util = require "util"
@@ -1601,7 +1605,7 @@ getCombinedText = (black_card, random_white_cards) ->
         currentWhiteCard = capitalizeFirstLetter(currentWhiteCard)
       black_card_tokens[_i] = black_card_tokens[_i].replace('__________', currentWhiteCard)
       currentWhiteCard = random_white_cards.shift()
-    shouldCapitalize = ".?".indexOf(black_card[_i].slice(-1)) > -1
+    shouldCapitalize = ".?".indexOf(black_card_tokens[_i].slice(-1)) > -1
   black_card_tokens.join " "
 
 capitalizeFirstLetter = (text) ->
