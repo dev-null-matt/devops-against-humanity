@@ -1363,6 +1363,9 @@ class DahGameStorage
     @roomData(room)['blackCard'] = blackCard
 
   # Player card functions ######################################################
+  getAllPlayedCards: (room) ->
+    @roomData(room)['combos']
+
   getCards: (name, room) ->
     @userData(name, room)['cards']
 
@@ -1373,8 +1376,7 @@ class DahGameStorage
     @userData(name, room)['cards'] = cards
 
   setCardsPlayed: (name, room, completion) ->
-    @roomData(room)['combos'][name] = completion
-    console.log("#{Util.inspect(@roomData(room)['combos'])}")
+    @roomData(room)['combos'][name] = {'completion': completion}
 
   # Player score functions #####################################################
   getScore: (name, room) ->
@@ -1422,6 +1424,26 @@ module.exports = (robot) ->
       # Uncomment the next line for local testing
       # dahGameStorage.setBlackCard(room, blackCard)
       message.send blackCard
+
+  robot.respond /devops reveal cards/i, (message) ->
+    if dahGameStorage.isSenderDealer(getSenderName(message), getRoomName(message)) && dahGameStorage.getBlackCard(room)
+      playedCardInfo = dahGameStorage.getAllPlayedCards(getRoomName(message))
+      players = []
+      response = []
+      for player, play of playedCardInfo
+        index = randomIndex(players)
+        players.splice(index, 0, player)
+      for player in players
+        response.push("#{_i+1}) #{playedCardInfo[player]['completion']}")
+        playedCardInfo[player]['index'] = _i+1
+      message.send response.join("\n")
+    else
+      dealer = dahGameStorage.getDealer(getRoomName(message)
+      if dealer
+        message.reply "only the dealer can reveal the combinations."
+        message.send "@#{dealer}, is it time?}"
+      else
+        message.reply "There is no dealer currently.  Perhaps it's time to start a game?"
 
   robot.respond /devops (what is (the )?)?current black card/i, (message) ->
     blackCard = dahGameStorage.getBlackCard(getRoomName(message))
@@ -1496,7 +1518,6 @@ playCards = (message) ->
   room = getRoomName(message)
   cards = dahGameStorage.getCards(sender, room)
   blackCard = dahGameStorage.getBlackCard(getRoomName(message))
-  blanks = countBlackCardBlanks(blackCard)
   if (dahGameStorage.getCardsPlayed(sender, room))
     cardWord = "card"
     if (blanks > 1)
@@ -1509,6 +1530,7 @@ playCards = (message) ->
       message.reply "you're the currently the devops dealer.  Maybe ask for a black card?"
   else if cards.length
     if (blackCard)
+      blanks = countBlackCardBlanks(blackCard)
       plays = []
       for index in cardIndices
         if index? && index > 0 && index < 6
