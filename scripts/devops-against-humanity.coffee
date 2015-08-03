@@ -1460,7 +1460,7 @@ module.exports = (robot) ->
       dealer = dahGameStorage.getDealer(getRoomName(message))
       if dealer
         message.reply "only the dealer can reveal the combinations."
-        message.send "@#{dealer}, is it time?}"
+        message.send "@#{dealer}, is it time for the big reveal?"
       else
         message.reply "There is no dealer currently.  Perhaps it's time to start a game?"
 
@@ -1473,7 +1473,7 @@ module.exports = (robot) ->
       if (dealer)
         message.send "There is no current black card.  Maybe @#{dealer.name} should draw one?"
       else
-        message.send "There isn't a black card currently.  Maybe you should start a game?"
+        message.reply "There isn't a black card currently.  Maybe you should start a game?"
 
   robot.respond /devops ([0-9]+) won/i, (message) ->
     sender = getSenderName(message)
@@ -1521,12 +1521,8 @@ module.exports = (robot) ->
     addSenderToGame(message)
 
   robot.respond /devops (what are )?my cards/i, (message) ->
-    jid = message.message.user.jid
     cards = getCards(getSenderName(message), getRoomName(message))
-    if jid?
-      robot.message jid cards
-    else
-      message.send cards
+    robot.messageRoom message.message.user.name, cards
 
   robot.respond /devops play card (\d+)( \d+)?( \d+)?/i, (message) ->
     playCards(message)
@@ -1536,7 +1532,7 @@ module.exports = (robot) ->
     if dealer?
       message.send "@#{dealer.name} is currently the devops dealer."
     else
-      message.send "There is no devops dealer currently.  Maybe you should start a game?"
+      message.reply "There is no devops dealer currently.  Maybe you should start a game?"
 
 # Called directly by robot.respond()s ##########################################
 addSenderToGame = (message) ->
@@ -1546,15 +1542,10 @@ addSenderToGame = (message) ->
     response = "You're the currently the devops dealer.  Maybe ask for a black card?"
   else if (!dahGameStorage.getCards(sender, room).length)
     giveUserCards(sender, room)
-    dahGameStorage.userData(sender, room)['jid'] = jid
-    jid = message.message.user.jid
     response = getCards(sender, room)
   else
     response = "You're already playing.  Do you want to know what devops cards you have?"
-  if jid?
-    robot.message jid cards
-  else
-    message.send response
+  robot.messageRoom message.message.user.name, response
 
 drawBlackCard = ->
   black_cards[randomIndex(black_cards)]
