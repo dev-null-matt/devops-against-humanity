@@ -9,7 +9,7 @@
 #   HUBOT_HIPCHAT_TOKEN
 #
 # Commands:
-#   hubot devops card me - Returns a random card against humanity with emoji
+#   hubot devops card me - Returns a random devops against humanity card pair.
 #   hubot devops start game - Starts a new devops agains humanity game
 #   hubot devops join - Joins an existing game
 #   hubot devops who is the dealer - Mentions the dealer
