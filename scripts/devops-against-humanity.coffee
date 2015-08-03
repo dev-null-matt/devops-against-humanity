@@ -1366,8 +1366,11 @@ class DahGameStorage
       else
         data['isDealer'] = false
 
-  isSenderDealer: (name, room) ->
-    @userData(name, room)['isDealer']
+  isSenderDealer: (name, room, isDealer) ->
+    if isDealer?
+      @userData(name, room)['isDealer'] = isDealer
+    else
+      @userData(name, room)['isDealer']
 
   # Black card functions #######################################################
   getBlackCard: (room) ->
@@ -1510,7 +1513,7 @@ module.exports = (robot) ->
     sender = getSenderName(message)
     room = getRoomName(message)
     dahGameStorage.clearRoomData(room)
-    dahGameStorage.setDealer(sender, room)
+    dahGameStorage.isSenderDealer(sender, room, true)
     dahGameStorage.userData(sender, room)['jid'] = message.message.user.jid
     message.send "Starting a new devops game."
 
