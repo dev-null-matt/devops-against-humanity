@@ -1454,7 +1454,7 @@ module.exports = (robot) ->
         playedCardInfo[player]['index'] = _i+1
       message.send response.join("\n")
     else
-      dealer = dahGameStorage.getDealer(getRoomName(message)
+      dealer = dahGameStorage.getDealer(getRoomName(message))
       if dealer
         message.reply "only the dealer can reveal the combinations."
         message.send "@#{dealer}, is it time?}"
