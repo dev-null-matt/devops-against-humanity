@@ -1,7 +1,7 @@
 {
   "name": "hubot-devops",
   "description": "Devops Against Humanity for Hubot",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "author": "Matt Rick <dev.null.matt@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -16,9 +16,6 @@
   },
   "bugs": {
     "url": "https://github.com/dev-null-matt/devops-against-humanity/issues"
-  },
-  "dependencies": {
-    "coffee-script": "~1.6"
   },
   "main": "index.coffee",
   "homepage": "https://github.com/dev-null-matt/devops-against-humanity"
