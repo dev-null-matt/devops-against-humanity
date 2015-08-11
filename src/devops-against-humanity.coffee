@@ -22,8 +22,8 @@
 #   KevinBehrens
 
 Util = require "util"
-black_cards = require('./devops/blackcards.coffee')
-white_cards = require('./devops/whitecards.coffee')
+black_cards = require('./blackcards.coffee')
+white_cards = require('./whitecards.coffee')
 
 Util = require "util"
 
