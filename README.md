@@ -14,3 +14,6 @@ Anyone can start a new game by saying `hubot devops new game`.  That player beco
 1. After selecting a winner, the dealer says `hubot devops <n> won`.
 
 After the current dealer selects the winnner, a new winner is picked at random from the players who submitted cards in that round.
+
+### Credits
+Special thanks go to [devops against humanity](http://devopsagainsthumanity.com) and its maintainer, Bridget Kromhout, as most of the card texts are based on the user generated lists curated there.
