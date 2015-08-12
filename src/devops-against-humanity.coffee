@@ -197,9 +197,10 @@ revealBlackCard = (message) ->
   if dahGameStorage.isSenderDealer(getSenderName(message),room) && !dahGameStorage.getBlackCard(room)
     dahGameStorage.setBlackCard(room, blackCard)
     message.send "Setting black card to:\n#{blackCard}"
+  else if dahGameStorage.isSenderDealer(getSenderName(message),room)
+    message.reply "you've already revealed the black card!"
   else
     message.reply "only the dealer can reveal the black card."
-    message.send "@#{dealer.name} should probably reveal it."
 
 revealCards = (message) ->
   room = getRoomName(message)
