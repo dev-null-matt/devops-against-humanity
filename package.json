@@ -1,7 +1,7 @@
 {
   "name": "hubot-devops",
   "description": "Devops Against Humanity for Hubot",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "author": "Matt Rick <dev.null.matt@gmail.com>",
   "license": "MIT",
   "keywords": [

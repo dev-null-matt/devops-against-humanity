@@ -37,110 +37,34 @@ module.exports = (robot) ->
   theRobot = robot
 
   robot.respond /devops card( me)?/i, (message) ->
-    message.send randomCompletion()
+    randomCompletion(message)
 
   robot.respond /devops (draw )?black card/i, (message) ->
-    blackCard = drawBlackCard()
-    room = getRoomName(message)
-    if dahGameStorage.isSenderDealer(getSenderName(message),room) && !dahGameStorage.getBlackCard(room)
-      dahGameStorage.setBlackCard(room, blackCard)
-      message.send "Setting black card to:\n#{blackCard}"
-    else
-      # Uncomment the next line for local testing
-      # dahGameStorage.setBlackCard(room, blackCard)
-      message.send blackCard
+    revealBlackCard(message)
 
   robot.respond /devops reveal cards/i, (message) ->
-    room = getRoomName(message)
-    if dahGameStorage.isSenderDealer(getSenderName(message), room) && dahGameStorage.getBlackCard(room)
-      playedCardInfo = dahGameStorage.getAllPlayedCards(room)
-      players = []
-      response = []
-      for player, play of playedCardInfo
-        players.splice(randomIndex(players), 0, player)
-      for player in players
-        response.push("#{_i+1}) #{playedCardInfo[player]['completion']}")
-        playedCardInfo[player]['index'] = _i+1
-      message.send response.join("\n")
-    else
-      dealer = dahGameStorage.getDealer(room)
-      if dahGameStorage.isSenderDealer(getSenderName(message), room)
-        message.reply "maybe you should set the black card before revealing white cards."
-      else if dealer
-        message.reply "only the dealer can reveal the combinations."
-        message.send "@#{dealer.name}, is it time for the big reveal?"
-      else
-        message.reply "There is no dealer currently.  Perhaps it's time to start a game?"
+    revealCards(message)
 
   robot.respond /devops (what is (the )?)?current black card/i, (message) ->
-    blackCard = dahGameStorage.getBlackCard(getRoomName(message))
-    if (blackCard)
-      message.send blackCard
-    else
-      dealer = dahGameStorage.getDealer(getRoomName(message))
-      if (dealer)
-        message.send "There is no current black card.  Maybe @#{dealer['name']} should draw one?"
-      else
-        message.reply "There isn't a black card currently.  Maybe you should start a game?"
+    findCurrentBlackCard(message)
 
   robot.respond /devops ([0-9]+) won/i, (message) ->
-    sender = getSenderName(message)
-    room = getRoomName(message)
-    if dahGameStorage.getDealer(room) && dahGameStorage.isSenderDealer(sender, room) && dahGameStorage.getBlackCard(room)
-      playedCardInfo = dahGameStorage.getAllPlayedCards(room)
-      winnerIndex = message.match[1]
-      players = Object.keys(playedCardInfo)
-      if winnerIndex > 0 && winnerIndex <= players.length
-        winningPlayer = undefined
-        for player, play of playedCardInfo
-          if "#{play['index']}" is "#{winnerIndex}"
-            winningPlayer = player
-        if winningPlayer
-          dahGameStorage.scorePoint(winningPlayer, room)
-          dahGameStorage.setDealer(players[randomIndex(players)], room)
-          for player in players
-            giveUserCards(player, room)
-          dahGameStorage.clearRoundData(room)
-          message.send "@#{winningPlayer} won.  #{winningPlayer}'s score is now #{dahGameStorage.getScore(winningPlayer, room)}."
-          message.send "@#{dahGameStorage.getDealer(room)['name']} is the new dealer."
-        else
-          message.reply "I couldn't find that card combination.  Have white cards been revealed?"
-      else
-        message.reply "There were only #{Object.keys(playedCardInfo).length} cards played.  Maybe pick one of those?"
-    else if !dahGameStorage.getDealer(room)
-      message.reply "There is no devops dealer currently.  Maybe you should start a game?"
-    else if !dahGameStorage.isSenderDealer(sender, room)
-      message.reply "You have to be the dealer to award points.  Stop trying to cheat."
-    else if !dahGameStorage.getBlackCard(room)
-      message.reply "You haven't drawn a black card yet.  How can you know who won?"
-
-  robot.respond /devops white card/i, (message) ->
-    message.send drawWhiteCard(true)
+    declareWinner(message)
 
   robot.respond /devops (start )?new game/i, (message) ->
-    sender = getSenderName(message)
-    room = getRoomName(message)
-    dahGameStorage.clearRoomData(room)
-    dahGameStorage.isSenderDealer(sender, room, true)
-    dahGameStorage.userData(sender, room)['jid'] = message.message.user.jid
-    message.send "Starting a new devops game."
+    startNewGame(message)
 
   robot.respond /devops (I'm )?join(ing)?/i, (message) ->
     addSenderToGame(message)
 
   robot.respond /devops (what are )?my cards/i, (message) ->
-    cards = getCards(getSenderName(message), getRoomName(message))
-    robot.send({'user': message.message.user.jid}, cards)
+    checkHand(message)
 
   robot.respond /devops play card (\d+)( \d+)?( \d+)?/i, (message) ->
     playCards(message)
 
   robot.respond /devops (who is the )?dealer/i, (message) ->
-    dealer = dahGameStorage.getDealer(getRoomName(message))
-    if dealer?
-      message.send "@#{dealer.name} is currently the devops dealer."
-    else
-      message.reply "There is no devops dealer currently.  Maybe you should start a game?"
+    checkDealer(message)
 
 # Called directly by robot.respond()s ##########################################
 addSenderToGame = (message) ->
@@ -153,13 +77,60 @@ addSenderToGame = (message) ->
     response = getCards(sender, room)
   else
     response = "You're already playing.  Do you want to know what devops cards you have?"
-  theRobot.send({'user': message.message.user.jid}, response)
+  pmPlayer(message.message.user.jid, response)
 
-drawBlackCard = ->
-  black_cards[randomIndex(black_cards)]
+checkDealer = (message) ->
+  dealer = dahGameStorage.getDealer(getRoomName(message))
+  if dealer?
+    message.send "@#{dealer.name} is currently the devops dealer."
+  else
+    message.reply "There is no devops dealer currently.  Maybe you should start a game?"
 
-drawWhiteCard = ->
-  white_cards[randomIndex(white_cards)]
+checkHand = (message) ->
+  cards = getCards(getSenderName(message), getRoomName(message))
+  pmPlayer(message.message.user.jid, cards)
+
+declareWinner = (message) ->
+  sender = getSenderName(message)
+  room = getRoomName(message)
+  if dahGameStorage.getDealer(room) && dahGameStorage.isSenderDealer(sender, room) && dahGameStorage.getBlackCard(room)
+    playedCardInfo = dahGameStorage.getAllPlayedCards(room)
+    winnerIndex = message.match[1]
+    players = Object.keys(playedCardInfo)
+    if winnerIndex > 0 && winnerIndex <= players.length
+      winningPlayer = undefined
+      for player, play of playedCardInfo
+        if "#{play['index']}" is "#{winnerIndex}"
+          winningPlayer = player
+      if winningPlayer
+        dahGameStorage.scorePoint(winningPlayer, room)
+        dahGameStorage.setDealer(players[randomIndex(players)], room)
+        for player in players
+          giveUserCards(player, room)
+        dahGameStorage.clearRoundData(room)
+        message.send "@#{winningPlayer} won.  #{winningPlayer}'s score is now #{dahGameStorage.getScore(winningPlayer, room)}."
+        message.send "@#{dahGameStorage.getDealer(room)['name']} is the new dealer."
+      else
+        message.reply "I couldn't find that card combination.  Have white cards been revealed?"
+    else
+      message.reply "There were only #{Object.keys(playedCardInfo).length} cards played.  Maybe pick one of those?"
+  else if !dahGameStorage.getDealer(room)
+    message.reply "There is no devops dealer currently.  Maybe you should start a game?"
+  else if !dahGameStorage.isSenderDealer(sender, room)
+    message.reply "You have to be the dealer to award points.  Stop trying to cheat."
+  else if !dahGameStorage.getBlackCard(room)
+    message.reply "You haven't drawn a black card yet.  How can you know who won?"
+
+findCurrentBlackCard = (message) ->
+  blackCard = dahGameStorage.getBlackCard(getRoomName(message))
+  if (blackCard)
+    message.send blackCard
+  else
+    dealer = dahGameStorage.getDealer(getRoomName(message))
+    if (dealer)
+      message.send "There is no current black card.  Maybe @#{dealer['name']} should draw one?"
+    else
+      message.reply "There isn't a black card currently.  Maybe you should start a game?"
 
 playCards = (message) ->
   cardIndices = [message.match[1], message.match[2], message.match[3]]
@@ -211,14 +182,54 @@ playCards = (message) ->
   else
     message.reply "you don't have any cards.  Maybe you should join the game?"
 
-randomCompletion = ->
+randomCompletion = (message) ->
   black_card = drawBlackCard()
   random_white_cards = []
   blanks = countBlackCardBlanks(black_card)
   for num in [1..blanks]
     white_card = drawWhiteCard()
     random_white_cards.push white_card
-  getCombinedText(black_card, random_white_cards)
+  message.send getCombinedText(black_card, random_white_cards)
+
+revealBlackCard = (message) ->
+  blackCard = drawBlackCard()
+  room = getRoomName(message)
+  if dahGameStorage.isSenderDealer(getSenderName(message),room) && !dahGameStorage.getBlackCard(room)
+    dahGameStorage.setBlackCard(room, blackCard)
+    message.send "Setting black card to:\n#{blackCard}"
+  else
+    message.reply "only the dealer can reveal the black card."
+    message.send "@#{dealer.name} should probably reveal it."
+
+revealCards = (message) ->
+  room = getRoomName(message)
+  if dahGameStorage.isSenderDealer(getSenderName(message), room) && dahGameStorage.getBlackCard(room)
+    playedCardInfo = dahGameStorage.getAllPlayedCards(room)
+    players = []
+    response = []
+    for player, play of playedCardInfo
+      players.splice(randomIndex(players), 0, player)
+    for player in players
+      response.push("#{_i+1}) #{playedCardInfo[player]['completion']}")
+      playedCardInfo[player]['index'] = _i+1
+    message.send response.join("\n")
+  else
+    dealer = dahGameStorage.getDealer(room)
+    if dahGameStorage.isSenderDealer(getSenderName(message), room)
+      message.reply "maybe you should set the black card before revealing white cards."
+    else if dealer
+      message.reply "only the dealer can reveal the combinations."
+      message.send "@#{dealer.name}, is it time for the big reveal?"
+    else
+      message.reply "There is no dealer currently.  Perhaps it's time to start a game?"
+
+startNewGame = (message) ->
+  sender = getSenderName(message)
+  room = getRoomName(message)
+  dahGameStorage.clearRoomData(room)
+  dahGameStorage.isSenderDealer(sender, room, true)
+  dahGameStorage.userData(sender, room)['jid'] = message.message.user.jid
+  message.send "Starting a new devops game."
 
 # Game logic helpers ###########################################################
 getCards = (sender, room) ->
@@ -246,6 +257,22 @@ giveUserCards = (sender, room) ->
   dahGameStorage.setCards(sender, room, cards)
 
 # Card completion helpers ######################################################
+capitalizeFirstLetter = (text) ->
+  if text.charAt(0) is '"'
+    white_card = text.charAt(0) + text.charAt(1).toUpperCase() + text.slice(2)
+  else
+    white_card = text.charAt(0).toUpperCase() + text.slice(1)
+  white_card
+
+countBlackCardBlanks = (black_card) ->
+  (black_card.match(/__________/g) || []).length
+
+drawBlackCard = ->
+  black_cards[randomIndex(black_cards)]
+
+drawWhiteCard = ->
+  white_cards[randomIndex(white_cards)]
+
 getCombinedText = (black_card, random_white_cards) ->
   black_card_tokens = black_card.split(' ')
   shouldCapitalize = true
@@ -259,16 +286,9 @@ getCombinedText = (black_card, random_white_cards) ->
     shouldCapitalize = ".?".indexOf(black_card_tokens[_i].slice(-1)) > -1
   black_card_tokens.join " "
 
-capitalizeFirstLetter = (text) ->
-  if text.charAt(0) is '"'
-    white_card = text.charAt(0) + text.charAt(1).toUpperCase() + text.slice(2)
-  else
-    white_card = text.charAt(0).toUpperCase() + text.slice(1)
-  white_card
-
-countBlackCardBlanks = (black_card) ->
-  (black_card.match(/__________/g) || []).length
-
 # Utility ######################################################################
+pmPlayer = (jid, text) ->
+  theRobot.send({'user': jid}, text)
+
 randomIndex = (array) ->
   Math.floor(Math.random() * array.length)
