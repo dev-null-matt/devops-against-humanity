@@ -1,6 +1,8 @@
 # Description:
-#   Generates a devops against humanity pair form http://devopsagainsthumanity.com
-#   A first editorial pass was made at the crowd-sourced cards. YMMV.
+#   The robot can run a game of devops against humanity using cards from
+#   http://devopsagainsthumanity.com
+#
+#   An editorial pass was made at the crowd-sourced cards. YMMV.
 #
 # Dependencies:
 #   None
@@ -19,7 +21,7 @@
 #   hubot devops <n> won - Announces the winner of the round
 #
 # Author:
-#   KevinBehrens
+#   MattRick and KevinBehrens
 
 Util = require "util"
 
