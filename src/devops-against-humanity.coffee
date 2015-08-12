@@ -84,7 +84,7 @@ checkDealer = (message) ->
   if dealer?
     message.send "@#{dealer.name} is currently the devops dealer."
   else
-    message.reply "There is no devops dealer currently.  Maybe you should start a game?"
+    message.reply "there is no devops dealer currently.  Maybe you should start a game?"
 
 checkHand = (message) ->
   cards = getCards(getSenderName(message), getRoomName(message))
@@ -113,13 +113,13 @@ declareWinner = (message) ->
       else
         message.reply "I couldn't find that card combination.  Have white cards been revealed?"
     else
-      message.reply "There were only #{Object.keys(playedCardInfo).length} cards played.  Maybe pick one of those?"
+      message.reply "there were only #{Object.keys(playedCardInfo).length} cards played.  Maybe pick one of those?"
   else if !dahGameStorage.getDealer(room)
-    message.reply "There is no devops dealer currently.  Maybe you should start a game?"
+    message.reply "there is no devops dealer currently.  Maybe you should start a game?"
   else if !dahGameStorage.isSenderDealer(sender, room)
-    message.reply "You have to be the dealer to award points.  Stop trying to cheat."
+    message.reply "you have to be the dealer to award points.  Stop trying to cheat."
   else if !dahGameStorage.getBlackCard(room)
-    message.reply "You haven't drawn a black card yet.  How can you know who won?"
+    message.reply "you haven't drawn a black card yet.  How can you know who won?"
 
 findCurrentBlackCard = (message) ->
   blackCard = dahGameStorage.getBlackCard(getRoomName(message))
@@ -130,7 +130,7 @@ findCurrentBlackCard = (message) ->
     if (dealer)
       message.send "There is no current black card.  Maybe @#{dealer['name']} should draw one?"
     else
-      message.reply "There isn't a black card currently.  Maybe you should start a game?"
+      message.reply "there isn't a black card currently.  Maybe you should start a game?"
 
 playCards = (message) ->
   cardIndices = [message.match[1], message.match[2], message.match[3]]
@@ -164,14 +164,14 @@ playCards = (message) ->
           cardIndices.splice(index,cardIndices.length - index)
           break
       # Play the cards
-      if (plays.length && plays.length == countBlackCardBlanks(blackCard))
+      if (plays? && plays.length and plays.length == blanks)
         newHand = []
         for card in cards
           if !(card in plays)
             newHand.push card
         dahGameStorage.setCards(sender, room, newHand)
         dahGameStorage.setCardsPlayed(sender, room, getCombinedText(blackCard, plays))
-      else if (plays.length)
+      else if (plays? && plays.length)
         verb = "is"
         if (blanks > 1)
           verb = "are"
@@ -197,9 +197,10 @@ revealBlackCard = (message) ->
   if dahGameStorage.isSenderDealer(getSenderName(message),room) && !dahGameStorage.getBlackCard(room)
     dahGameStorage.setBlackCard(room, blackCard)
     message.send "Setting black card to:\n#{blackCard}"
+  else if dahGameStorage.isSenderDealer(getSenderName(message),room)
+    message.reply "you've already revealed the black card!"
   else
     message.reply "only the dealer can reveal the black card."
-    message.send "@#{dealer.name} should probably reveal it."
 
 revealCards = (message) ->
   room = getRoomName(message)
@@ -221,7 +222,7 @@ revealCards = (message) ->
       message.reply "only the dealer can reveal the combinations."
       message.send "@#{dealer.name}, is it time for the big reveal?"
     else
-      message.reply "There is no dealer currently.  Perhaps it's time to start a game?"
+      message.reply "there is no dealer currently.  Perhaps it's time to start a game?"
 
 startNewGame = (message) ->
   sender = getSenderName(message)
