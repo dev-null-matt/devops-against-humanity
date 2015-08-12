@@ -164,14 +164,14 @@ playCards = (message) ->
           cardIndices.splice(index,cardIndices.length - index)
           break
       # Play the cards
-      if (plays.length && plays.length == countBlackCardBlanks(blackCard))
+      if (plays? && plays.length and plays.length == blanks)
         newHand = []
         for card in cards
           if !(card in plays)
             newHand.push card
         dahGameStorage.setCards(sender, room, newHand)
         dahGameStorage.setCardsPlayed(sender, room, getCombinedText(blackCard, plays))
-      else if (plays.length)
+      else if (plays? && plays.length)
         verb = "is"
         if (blanks > 1)
           verb = "are"
