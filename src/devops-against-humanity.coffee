@@ -15,7 +15,8 @@
 #   hubot devops start game - Starts a new devops agains humanity game
 #   hubot devops join - Joins an existing game
 #   hubot devops who is the dealer - Mentions the dealer
-#   hubot devops black card - Displays a black card, setting it for the round if you're the dealer
+#   hubot devops black card - Reveals the black card for the round if you're the dealer
+#   hubot devops current black card - Display the black card for the round
 #   hubot devops play card <n> <m> <o> - Plays cards from your hand
 #   hubot devops reveal cards - Reveals all the card combinations
 #   hubot devops <n> won - Announces the winner of the round
