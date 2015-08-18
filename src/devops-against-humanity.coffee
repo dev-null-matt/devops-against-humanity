@@ -15,10 +15,12 @@
 #   hubot devops start game - Starts a new devops agains humanity game
 #   hubot devops join - Joins an existing game
 #   hubot devops who is the dealer - Mentions the dealer
-#   hubot devops black card - Displays a black card, setting it for the round if you're the dealer
+#   hubot devops black card - Reveals the black card for the round if you're the dealer
+#   hubot devops current black card - Display the black card for the round
 #   hubot devops play card <n> <m> <o> - Plays cards from your hand
 #   hubot devops reveal cards - Reveals all the card combinations
 #   hubot devops <n> won - Announces the winner of the round
+#   hubot devops score - Reports the score
 #
 # Author:
 #   MattRick and KevinBehrens
@@ -65,6 +67,9 @@ module.exports = (robot) ->
 
   robot.respond /devops (who is the )?dealer/i, (message) ->
     checkDealer(message)
+
+  robot.respond /devops (top |bottom )?([0-9]+ )?score/i, (message) ->
+    reportScore(message)
 
 # Called directly by robot.respond()s ##########################################
 addSenderToGame = (message) ->
@@ -190,6 +195,32 @@ randomCompletion = (message) ->
     white_card = drawWhiteCard()
     random_white_cards.push white_card
   message.send getCombinedText(black_card, random_white_cards)
+
+reportScore = (message) ->
+  report = ["There are no scores to report."]
+  scores = []
+  asc = true
+  amount = 5
+
+  for name, player of dahGameStorage.roomData(getRoomName(message))['users']
+    scores.push player
+
+  if scores.length > 0
+    report = ["The current score is:"]
+
+    if (message.match[1]?)
+      asc = message.match[1].trim().toLowerCase() == 'top'
+
+    if (message.match[2]?)
+      amount = message.match[2]
+
+    scores.sort((a,b) -> if asc then b.score - a.score else a.score - b.score)
+    scores = scores.slice(0, amount)
+
+    for score in scores
+      report.push "\t #{score['name']}: #{score['score']} points"
+
+  message.send report.join("\n")
 
 revealBlackCard = (message) ->
   blackCard = drawBlackCard()
