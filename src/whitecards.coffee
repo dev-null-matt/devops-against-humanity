@@ -435,7 +435,7 @@ module.exports = [
   "packet loss"
   "smokeping"
   "losing the root password"
-  "an egineer insisting \"it works on my machine!\""
+  "an engineer insisting \"it works on my machine!\""
   "malloc"
   "buffer overflow"
   "100 contractors wailing \"StackOverflow is OFFLINE?!\""
