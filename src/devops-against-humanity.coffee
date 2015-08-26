@@ -306,17 +306,17 @@ drawWhiteCard = ->
   white_cards[randomIndex(white_cards)]
 
 getCombinedText = (black_card, random_white_cards) ->
-  black_card_tokens = black_card.split(' ')
+  black_card_tokens = black_card.split('__________')
   shouldCapitalize = true
   currentWhiteCard = random_white_cards.shift()
   for word in black_card_tokens
-    if word.match(/_{10}/)
+    if currentWhiteCard?
       if shouldCapitalize
         currentWhiteCard = capitalizeFirstLetter(currentWhiteCard)
-      black_card_tokens[_i] = black_card_tokens[_i].replace('__________', currentWhiteCard)
+      black_card_tokens[_i] = "#{black_card_tokens[_i]}#{currentWhiteCard}"
       currentWhiteCard = random_white_cards.shift()
     shouldCapitalize = ".?".indexOf(black_card_tokens[_i].slice(-1)) > -1
-  black_card_tokens.join " "
+  black_card_tokens.join ""
 
 # Utility ######################################################################
 pmPlayer = (jid, text) ->
