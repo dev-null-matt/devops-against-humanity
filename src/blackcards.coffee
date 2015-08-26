@@ -1,6 +1,6 @@
 module.exports = [
   "__________ logs or it didn't happen."
-  # "s/__________/__________/g" # TODO: Fix this.  Its awesome, but doesn't work.
+  "s/__________/__________/g"
   "__________, for some values of __________."
   "Ask Me Anything about __________."
   "Called on account of __________."
