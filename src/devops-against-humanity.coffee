@@ -309,7 +309,7 @@ getCombinedText = (black_card, random_white_cards) ->
   black_card_tokens = black_card.split('__________')
   currentWhiteCard = random_white_cards.shift()
   for word in black_card_tokens
-    shouldCapitalize = ".?".indexOf(black_card_tokens[_i].slice(-1)) > -1
+    shouldCapitalize = ".?".indexOf(black_card_tokens[_i].trim().slice(-1)) > -1
     if currentWhiteCard?
       if shouldCapitalize
         currentWhiteCard = capitalizeFirstLetter(currentWhiteCard)
