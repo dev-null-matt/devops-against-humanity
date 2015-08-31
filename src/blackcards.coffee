@@ -34,7 +34,6 @@ module.exports = [
   "Put some __________ on it!"
   "Wrap it with __________ duct tape."
   "But Google is using __________ so we should too!"
-  "__________ is the new __________."
   "Etsy says we should __________ everything."
   "xkcd.com just made a hilarious comic about using __________ to __________."
   "This isn't going to be all unicorns and __________."
