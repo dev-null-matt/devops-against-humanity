@@ -467,7 +467,7 @@ module.exports = [
   "It's cool, they use __________ at Etsy."
   "Code as __________."
   "__________ is how the cloud works."
-  "How does it look in Opera?"
+  "It looks like __________ in Opera."
   "__________ shell"
   "__________ in haskell"
   "Say __________ one more time; I dare you!"
