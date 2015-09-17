@@ -21,6 +21,7 @@
 #   hubot devops reveal cards - Reveals all the card combinations
 #   hubot devops <n> won - Announces the winner of the round
 #   hubot devops score - Reports the score
+#   hubot devops list players - Lists the players in the game and if they've played a card this round
 #
 # Author:
 #   MattRick and KevinBehrens
