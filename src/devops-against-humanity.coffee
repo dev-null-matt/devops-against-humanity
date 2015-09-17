@@ -21,6 +21,7 @@
 #   hubot devops reveal cards - Reveals all the card combinations
 #   hubot devops <n> won - Announces the winner of the round
 #   hubot devops score - Reports the score
+#   hubot devops list players - Lists the players in the game and if they've played a card this round
 #
 # Author:
 #   MattRick and KevinBehrens
@@ -70,6 +71,9 @@ module.exports = (robot) ->
 
   robot.respond /devops (top |bottom )?([0-9]+ )?score/i, (message) ->
     reportScore(message)
+
+  robot.respond /devops list players/i, (message) ->
+    listPlayers(message)
 
 # Called directly by robot.respond()s ##########################################
 addSenderToGame = (message) ->
@@ -136,6 +140,20 @@ findCurrentBlackCard = (message) ->
       message.send "There is no current black card.  Maybe @#{dealer['name']} should draw one?"
     else
       message.reply "there isn't a black card currently.  Maybe you should start a game?"
+
+listPlayers = (message) ->
+  room = getRoomName(message)
+  dealer = dahGameStorage.getDealer()
+  players = []
+  response = []
+  for player, play of dahGameStorage.getAllPlayedCards(room)
+    players.push(player)
+  for name, player of dahGameStorage.roomData(getRoomName(message))['users']
+    if name in players && (! dealer? || !(dealer['name'] is name))
+      response.push("#{name} has played a card this round.")
+    else if ! dealer? || !(dealer['name'] is name)
+      response.push("#{name} has not yet played a card this round.")
+  message.send response.join("\n")
 
 playCards = (message) ->
   cardIndices = [message.match[1], message.match[2], message.match[3]]

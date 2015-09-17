@@ -20,6 +20,7 @@ Anyone can start a new game by saying `hubot devops new game`.  That player beco
 1. At any point anyone can say `hubot devops top <n> score` to see the top n players and their scores.
 1. At any point anyone can say `hubot devops bottom <n> score` to see the bottom n players and their scores.
 1. At any point anyone can say `hubot devops current black card` to see the current black card.
+1. At any point anyone can say `hubot devops list players` to see a list of players and whether or not they have played a card in the current round.
 
 ---
 
