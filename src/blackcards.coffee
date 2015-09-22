@@ -6,8 +6,6 @@ module.exports = [
   "Called on account of __________."
   "Disrupting the established players in __________ via __________."
   "Doge __________."
-  # TODO: This needs work
-  "Employees must __________ before returning to work."
   "Is __________ in the cloud considered Enterprise-ready?"
   "Epic yak-shave caused by __________."
   "Facebook has acquired __________ for $10b and __________."
@@ -28,13 +26,9 @@ module.exports = [
   "Uber is on surge pricing because of __________."
   "WARN: __________ has been deprecated."
   "Will merge pull requests for __________."
-  # TODO: This needs work
-  "Zero-day __________."
+  "__________ was was taken down by a zero-day vulernability."
   "Time to schedule the postmortem for __________."
   "__________ - the idiots guide to __________ and __________."
-  # TODO: These two need work
-  "Put some __________ on it!"
-  "Wrap it with __________ duct tape."
   "But Google is using __________ so we should too!"
   "Etsy says we should use __________ for everything."
   "Have you seen the xkcd about using __________ as a replacement for __________."
@@ -42,8 +36,7 @@ module.exports = [
   "Apple just patented __________."
   "When I was a kid we didn't have __________."
   "__________ is a nice idea, lets found a start-up."
-  # TODO: This needs work
-  "DevOps: Now with 100% more __________!"
+  "DevOps: Now with a 100% increase in __________!"
   "Main benefits of automation: __________ and __________."
   "Chef converge failed due to __________."
   "Then there was the time I found __________ on the root partition."
@@ -66,9 +59,6 @@ module.exports = [
   "I find Java to be way too much like __________."
   "It's like trying to herd __________."
   "I ended up having to buy a replacement for __________ on eBay."
-  # TODO: The next two need work
-  "__________ is more memory than anyone will ever need on a computer."
-  "__________ Driven Development."
   "The RIAA is suing me for downloading __________."
   "Security? We've got that! We use __________."
   "sudo pip install __________"
@@ -100,9 +90,7 @@ module.exports = [
   "Every time someone brings up __________, I throw up a little in my mouth."
   "All that we had to do to halve our response times was implement __________."
   "Our entire app is geared towards providing __________."
-  # TODO: This needs work
-  "We just achieved __________s per second!"
-  "Is __________ even high availabilty?"
+  "Is __________ high availabilty?"
   "My LinkedIn endorsements include __________ and __________."
   "The users are using __________ as a workaround for __________."
   "Robots are going to make __________ obsolete."
@@ -111,8 +99,6 @@ module.exports = [
   "We can just fix that with __________."
   "You can have __________, __________, or __________.  Pick two."
   "A monad is just __________ in the category of __________, what's the problem?"
-  # TODO: This needs work
-  "Functional programming - if you can't __________ it, __________ it."
   "On a scale from 1 to 10, this is __________!"
   "We don't need configuration management, we have __________!"
   "__________, now with __________ support."
@@ -128,8 +114,6 @@ module.exports = [
   "NoSQL is superior to SQL because __________."
   "Script kiddies got into __________ because __________."
   "__________ is better than Hadoop because __________."
-  # TODO: This needs work
-  "Rub a little __________ on it."
   "WAIT, YOU DELETED __________??!"
   "It's not web scale, it's __________."
   "The tech support hotline told me to try __________."
@@ -217,8 +201,7 @@ module.exports = [
   "Conway's Game of __________."
   "Next year I'll start learning to use __________."
   "__________ is the newest gTLD."
-  # TODO: This needs work
-  "One does not simply __________."
+  "One does not simply open a ticket to fix __________."
   "Sorry, you'll need to open a ticket before we can fix __________."
   "ln -s __________ __________"
   "__________ is dead."
@@ -244,8 +227,7 @@ module.exports = [
   "On the plus side, we finally got rid of __________."
   "__________ thought leader."
   "Fuck it: __________ looks good to me."
-  # TODO: This needs work
-  "It looks like you're trying to __________. Can I help?"
+  "Hi, I'm Clippy the office assistant.  Would you like __________ today?"
   "zsh: command not found: __________"
   "How did __________ ever work?"
   "Whoops, I thought that method was supposed to __________ __________."
@@ -301,8 +283,6 @@ module.exports = [
   "I just finished writing an API for __________."
   "__________ is a batch command to shut the heck up."
   "__________.  Failed to cache catalog."
-  # TODO: This needs work
-  "Everytime you allocate you have to __________ when you're done."
   "Sorry, I'm all out of __________-fu."
   "90% of everything is __________."
   "Given enough __________, all bugs are __________."
@@ -333,8 +313,7 @@ module.exports = [
   "We rewrote __________ in __________."
   "The ticket to install __________?  I deletegated it."
   "Some people, when confronted with a problem, think \"I know, I'll use __________.\" Now they have two problems."
-  # TODO: This needs work
-  "Artisanally crafted __________."
+  "We only use __________, artisanally crafted by Mennonites from Ohio."
   "The backups are fine, but the restore process is __________."
   "I can't believe QA filed a bug for __________."
   "__________ is just one indespensible service that ops provides developers."
@@ -420,8 +399,7 @@ module.exports = [
   "__________ ate all my memory!"
   "__________ is always a good practice."
   "Don't mind me, I'm just practicing __________."
-  # TODO: This needs work
-  "We accidently the whole __________."
+  "The intern tripped in the server room and shut down __________."
   "It's easy! Just run __________."
   "I assure you __________ is secure!"
   "Our backup policy is __________."
