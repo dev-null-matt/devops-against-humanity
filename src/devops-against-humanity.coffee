@@ -54,7 +54,7 @@ module.exports = (robot) ->
   robot.respond /devops ([0-9]+) won/i, (message) ->
     declareWinner(message)
 
-  robot.respond /devops (start )?new game/i, (message) ->
+  robot.respond /devops (start( new)?|new) game/i, (message) ->
     startNewGame(message)
 
   robot.respond /devops (I'm )?join(ing)?/i, (message) ->
