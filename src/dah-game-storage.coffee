@@ -62,6 +62,13 @@ class DahGameStorage
     delete @data[room]['blackCard']
     @data[room]['combos'] = {}
 
+  # Messaging functions ########################################################
+  getUserJid: (name, room) ->
+    @userData(name, room)['jid']
+
+  setUserJid: (name, room, jid) ->
+    @userData(name, room)['jid'] = jid
+
   # Helper functions ###########################################################
   roomData: (room) ->
     result = @data[room]
