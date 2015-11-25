@@ -83,6 +83,7 @@ addSenderToGame = (message) ->
     response = "You're the currently the devops dealer.  Maybe ask for a black card?"
   else if (!dahGameStorage.getCards(sender, room).length)
     giveUserCards(sender, room)
+    dahGameStorage.setUserJid(sender, room, message.message.user.jid)
     response = getCards(sender, room)
   else
     response = "You're already playing.  Do you want to know what devops cards you have?"
@@ -278,7 +279,7 @@ startNewGame = (message) ->
   room = getRoomName(message)
   dahGameStorage.clearRoomData(room)
   dahGameStorage.isSenderDealer(sender, room, true)
-  dahGameStorage.userData(sender, room)['jid'] = message.message.user.jid
+  dahGameStorage.setUserJid(sender, room, message.message.user.jid)
   message.send "Starting a new devops game."
 
 # Game logic helpers ###########################################################
