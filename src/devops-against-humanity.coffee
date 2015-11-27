@@ -117,6 +117,7 @@ declareWinner = (message) ->
         dahGameStorage.setDealer(players[randomIndex(players)], room)
         for player in players
           giveUserCards(player, room)
+          pmPlayer(player.jid, getCards(player.name, room))
         dahGameStorage.clearRoundData(room)
         message.send "@#{winningPlayer} won.  #{winningPlayer}'s score is now #{dahGameStorage.getScore(winningPlayer, room)}."
         message.send "@#{dahGameStorage.getDealer(room)['name']} is the new dealer."
