@@ -44,7 +44,7 @@ module.exports = [
   "Management said it's OK to deploy __________ at 5pm on Friday."
   "Did you know that we have __________ on pager rotation?"
   "There was no good solution for __________, so we built our own using __________."
-  "Amazon built a data enter on the moon to lessen the risk of __________ causing problems."
+  "Amazon built a data center on the moon to lessen the risk of __________ causing problems."
   "In order to improve security, we're upgrading to __________."
   "The two pillars of our Continuous Deployment pipeline are __________ and __________."
   "I got paged at 3am because of __________."
